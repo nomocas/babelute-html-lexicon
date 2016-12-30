@@ -22,7 +22,7 @@ It's composed of :
 - 3 babelute $output engines
 	- html-to-string
 	- html-to-dom
-	- html-to-first-degree-diffing
+	- html-to-dom-diffing
 
 It could be extended for any other rendering engine. 
 By example there is already babelute-deathmood or babelute-vdom.
