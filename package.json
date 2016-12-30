@@ -1,0 +1,31 @@
+{
+  "name": "babelute-html",
+  "version": "0.1.0",
+  "description": "Babelute HTML5 DSL and its isomorphic rendering engines. World's fastest, lightest and simplest.",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nomocas/babelute-html.git"
+  },
+  "keywords": [
+    "dom rendering",
+    "dom diffing",
+    "html templating",
+    "mvc",
+    "view"
+  ],
+  "author": "Gilles Coomans",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nomocas/babelute-html/issues"
+  },
+  "homepage": "https://github.com/nomocas/babelute-html#readme",
+  "dependencies": {
+    "babelute": "*",
+    "babelute-pragmatics": "*",
+  },
+  "devDependencies": {}
+}
