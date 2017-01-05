@@ -26,7 +26,8 @@
   "homepage": "https://github.com/nomocas/babelute-html#readme",
   "dependencies": {
     "babelute": "*",
-    "babelute-pragmatics": "*"
+    "babelute-pragmatics": "*",
+    "to-slug-case": "^1.0.0"
   },
   "devDependencies": {}
 }
