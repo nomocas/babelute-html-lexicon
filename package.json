@@ -4,7 +4,8 @@
   "description": "Babelute HTML5 DSL and its isomorphic rendering engines. World's fastest, lightest and simplest.",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "build-browser": "browserify dist/browser.js -s Babelute > dist/babelute-html-browser.min.js"
   },
   "repository": {
     "type": "git",
@@ -25,7 +26,7 @@
   "homepage": "https://github.com/nomocas/babelute-html#readme",
   "dependencies": {
     "babelute": "*",
-    "babelute-pragmatics": "*",
+    "babelute-pragmatics": "*"
   },
   "devDependencies": {}
 }
