@@ -1,0 +1,38 @@
+{
+    "root": true,
+	"env": {
+        "es6": true,
+        "browser": true,
+        "node": true
+    },
+    "extends": [
+        "eslint:recommended",
+        "plugin:import/errors",
+        "plugin:import/warnings"
+    ],
+    "parserOptions": {
+        "ecmaVersion": 6,
+        "sourceType": "module",
+        "ecmaFeatures": {
+        }
+    },
+    "rules":{
+        "indent": [ 2, "tab", { "SwitchCase": 1 } ],
+        "semi": [ 2, "always" ],
+        "prefer-const": [ 2, { "destructuring": "all" } ],
+        "object-shorthand":  [ 2, "always" ],
+        "keyword-spacing": [ 2, { "before": true, "after": true } ],
+        "space-before-blocks": [ 2, "always" ],
+        "space-before-function-paren": [ 0, "never" ],
+        "no-mixed-spaces-and-tabs": [ 2, "smart-tabs" ],
+        "no-unused-vars": 2,
+        "no-unreachable": 2,
+        "valid-typeof": 2,
+        "prefer-arrow-callback": 2,
+        "arrow-spacing": 2,
+        "one-var": [ 0, "never" ],
+        "no-this-before-super": 2,
+        "quote-props": [ 2, "as-needed" ],
+        "no-var":2
+    }
+}

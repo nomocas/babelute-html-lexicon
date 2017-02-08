@@ -29,10 +29,10 @@ function createInitializer(Class) {
 	return initializer;
 }
 
-class FirstDegree extends Babelute {}
+class FirstLevel extends Babelute {}
 
-function createFirstDegree(Class, lexicName) {
-	class FDClass extends FirstDegree {};
+function createFirstLevel(Class, lexicName) {
+	class FDClass extends FirstLevel {};
 	for (var i in Class.prototype)
 		if (Class.prototype.hasOwnProperty(i))
 			FDClass.prototype[i] = function() {
