@@ -1,0 +1,24 @@
+{
+	"title": "babelute-html++",
+	"source": "./src",
+	"destination": "./doc",
+	"test": {
+		"type": "mocha",
+		"source": "./test"
+	},
+	"lint": true,
+	"coverage": true,
+	"styles": ["./doc-style.css"],
+	"manual": {
+		"badge": true,
+		"globalIndex": true,
+		"index": "./README.md",
+		"overview": ["./manual/overview.md"],
+		"installation": ["./manual/install.md"],
+		"usage": ["./manual/plugins.md"],
+		"design": ["./manual/react-like.md", "./manual/real-isomorphism.md"],
+		"example": ["./manual/example.md"],
+		"tutorial": ["./manual/html-lexicon.md", "./manual/html-meta-lexicon.md", "./manual/html-to-dom.md", "./manual/html-to-dom-diffing.md", "./manual/html-to-string.md", "./manual/html-two-pass-string.md"]
+	}
+}
+

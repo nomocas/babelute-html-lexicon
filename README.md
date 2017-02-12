@@ -1,12 +1,12 @@
 # babelute-html
 
-HTML DSL for Babelute.
+HTML DSL for Babelute. So simple, so powerful.
 
-- One of the lightest modern js View lib avaiable (around 3Ko gzipped with dependencies) 
+- __One of the lightest__ modern pure js html lib avaiable (around 4Ko gzipped with dependencies) 
 - Natural Web Components definition and usage.
 - Natural and clean React-like one-way data-binding (or no-binding-at-all)
 - Natural and easy DSL encapsulation/extension.
-- One of the fastest DOM diffing engine (fastest than Mithril in chrome and firefox - around 10 times faster than React)
+- __One of the fastest DOM diffing engine__ (fastest than Mithril in chrome and firefox - around 10 times faster than React)
 - Simple and easy to understand algorithm. No more esoteric interpretation or optimisation trick. You are the master.
 - Diffing algo that will show excellent behaviour when scalling. More components you have, more optimisation happend.
 - Absolutly non-obstrusive (but need immutables). Play really well with other libs (redux, immutables, jquery, ...).
@@ -17,15 +17,19 @@ And of course as a Babelute DSL, it could be used along with ALL other Babelute'
 Specifically, it will be used heavily as HTML translation target for any Babelute sentences that need HTML representation.
 (By example : babelute-doc, babelute-aright, babelute-fs, babelute-cooking, ...)
 
-It's composed of :
-- the HTML keywords lexic
-- 3 babelute $output engines
+It provides :
+- the HTML5 keywords lexicon
+- the HTML5 meta-tags (and social medias add-ons) lexicon
+- 4 babelute's $output engines
 	- html-to-string
 	- html-to-dom
 	- html-to-dom-diffing
+	- html-two-pass-string (for real isomorphism)
 
-It could be extended for any other rendering engine. 
-By example there is already babelute-deathmood or babelute-vdom.
+
+It could be extended for any other rendering engine. By example there is already babelute-deathmood or babelute-vdom.
+
+What is really elegant, is that none of the concepts or the tools needed to achieve this has been made for html handling. All this comes directly from Babelute DSL paradigm and is in fact just its application (one among all other DSLs).
 
 ## Licence
 

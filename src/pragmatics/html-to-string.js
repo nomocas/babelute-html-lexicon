@@ -6,16 +6,31 @@
  * @copyright 2016-2017 Gilles Coomans
  */
 
-import HTMLScopes from './html-scopes.js';
-import FacadePragmatics from 'babelute/src/pragmatics/facade-pragmatics';
+import babelute from 'babelute';
 import toSlugCase from 'to-slug-case'; // for data-* attributes
 import htmlSpecialChars from 'nomocas-utils/lib/string/html-special-chars'; // for safe string output
 
-export default new FacadePragmatics({
+const Scopes = babelute.Scopes,
+	$baseOutput = babelute.FacadePragmatics.prototype.$output;
+
+/**
+ * html-to-string pragmatics
+ * @type {FacadePragmatics}
+ * @public
+ * @example
+ * import stringPragmas from 'babelute-html/src/html-to-string.js';
+ * import htmlLexicon from 'babelute-html/src/html-lexicon.js';
+ *
+ * const h = htmlLexicon.initializer;
+ * const sentence = h.div(state.intro).section(h.class('my-section').h1(state.title));
+ * 
+ * var stringOutput = stringPragmas.$output(null, sentence);
+ */
+const stringPragmas = babelute.createFacadePragmatics({
 	html: true
 }, {
 	// we only need logical atoms definitions. (without user interactions. aka click etc.)
-	tag(tag, args /* tagName, babelutes */ , env) {
+	tag(tag, args /* tagName, babelutes */ , scopes) {
 		const child = new TagDescriptor(),
 			babelutes = args[1];
 		let templ;
@@ -24,7 +39,7 @@ export default new FacadePragmatics({
 			if (typeof templ === 'undefined')
 				continue;
 			if (templ && templ.__babelute__)
-				this.$output(child, templ, env);
+				this.$output(child, templ, scopes);
 			else if (typeof templ === 'string')
 				child.children += htmlSpecialChars.encode(templ); //.replace(/</g, '&lt;').replace(/>/g, '&gt;');
 			else
@@ -72,14 +87,14 @@ export default new FacadePragmatics({
 		tag.children += args[0]; // TODO : should be sanitize
 	},
 
-	onString(tag, args /* render */ , env) {
+	onString(tag, args /* render */ , scopes) {
 		const onRender = args[0];
 		if (onRender)
-			onRender(tag, env);
+			onRender(tag, scopes);
 	},
 
-	$output(descriptor, babelute, env) {
-		return FacadePragmatics.prototype.$output.call(this, descriptor || new TagDescriptor(), babelute, env || new HTMLScopes()).children;
+	$output(descriptor, babelute, scopes) {
+		return $baseOutput.call(this, descriptor || new TagDescriptor(), babelute, scopes || new Scopes(this._initScopes ? this._initScopes() : null)).children;
 	}
 });
 
@@ -115,4 +130,6 @@ function tagOutput(parent, tag, name) {
 	else
 		parent.children += out + '/>';
 }
+
+export default stringPragmas;
 

@@ -1,98 +1,18 @@
 /**
- * ****** FirstLevel AST diffing ******
- * 
- * World's Fastest Diffing algorithm (in many cases ;)).
- * Also one of the lightest and simplest to understand, tweak, maintain, etc.
- *
- * No more esoteric Virtual DOM or diffing algorithm.
- *
- * The only abstract part to understand is the FirstLevel Babelute concept (which is simple by nature. don't panic ;))
- * and the related oneLevelDeveloppement method.
- *
- *
- * First Level refer to "first level of understanding", as if every words are understoud only "literally".
- * 
- * In french there is an expression for this concept which seems to not exists as this in english 
- * and which could be translated literally as "understanding (or expressing) things at first degree", "... second degree", "... third degree", ..., "{x} degree".
- *
- * We could talk about "second degree humour", 
- * or say about someone that he "takes everything at first degree" (he never understands things deeply or has no sens of humour), 
- * or say about a text that it contains multiple "degree of understanding".
- *
- * As "first degree" in english is understoud as "the more serious" or "the more important", 
- * and as in french it says "the less understoud" or "the more literal" or "the most obvious",
- * I prefer use "FirstLevel" to make things clear.
- * 
- * A FirstLevel Babelute is a Babelute (a DSL's lexicon) where all "compounds lexems methods" are replaced by the "default atom method" 
- * (aka a method that just append a single lexem with its name as lexem's name and that provide its arguments as lexem's args).
- * So a FirstLevel api signature is exactly the same than it's correspondant Babelute, but every lexem are seen as a syntactical atoms.
- *
- * (see Babelute documentation for more details).
- *
- * One other important things to understand is that it need a "stable AST", which means that diffed sentences should be the "same" between each rendering (same lexems structure).
- *
- * So, you MUST use .if(condition, babelute, elseBabelute) and .each(array, function(item, index){ return ...a babelute...; }) 
- * to forge conditionaly or repeatedly sentences.
- *
- * In other words : do not write :
- *
- * var myBabelute = h.myLexem(...);
- * if(blabla)
- * 		myBabelute.myOtherLexem(...);
- * 	else
- * 		myBabelute.myThirdLexem(...);
- *  myCollection.forEach(function(item){
- *  	myBabelute.myFourthLexem(item.title);
- *  });
- *  
- * Which will produce different sentences structures depending on inputs (lexems and arguments are differents).
- * But in place write :
- *
- * h.myLexem(...)
- * .if(blabla, h.myOtherLexem(...), h.myThirdLexem(...))
- * .each(myCollection, function(item){
- * 		return h.myFourthLexem(item.title);
- * });
- *
- * Which will produce the same lexems structure, regardless of the inputs (only arguments change). 
- *
- *
- * Algorithmic details
- *
- * Good algorithmic optimisations works by cutting logical tree as high as possible.
- * This one works on the highest avaiable tree : the template's AST.
- * It works by diffing components arguments (dsl's method - aka lexem's - arguments) and by developping lexems "degree by degree", only when needed.
- * It allows to keep rendering perf incredibly stable through sequence of modifications and quite independent of DOM nodes quantity.
- * More you have components, more you have nodes, better optimisations you have.
- *
- * Algorithmic performance always depends on inputs set. And this one either.
- * As it constructs and hold the whole template AST at first rendering (the lightest one) 
- * in addition to leafs (HTML DSL Atoms - Seen as ours Virtual DOM nodes) and DOM's elements, 
- * first rendering is a (really) little bit more consuming than other cutting-edge diffing algorithm 
- * that produce only DOM's elements (mythril, vue, plastik, ... -  see benchmark).
- * 
- * But this one is much faster after, simply because it rerender and dif only few paths in AST 
- * in place of rerendering and diffing big bunchs of (Virtual)DOM's elements.
- *
- * The complexity depends on AST mean path length from root to leaf.
- *
- * One thing fun is that it works as a simple classical diffing algorithm (aka. always rerender all and dif resulted virtual dom) 
- * when not used with FirstLevel babelutes (so when used with "normal" babelutes). 
- * And so the fondamental difference between this algorithm and the classic one is just few lines.
- *
- * 
+ * Babelute HTML Dom Diffing Pragmatics
  * @author Gilles Coomans
  * @licence MIT
- * @copyright 2016-2017 Gilles Coomans
+ * @copyright 2017 Gilles Coomans
  */
 
-// import { Lexem } from 'babelute/lib/babelute';
 import htmlLexicon from '../html-lexicon';
-import Pragmatics from 'babelute/src/pragmatics/pragmatics-core';
-import HTMLScopes from './html-scopes.js';
-import domUtils from './dom-utils'; // only used in contentEditable. safe for server and string output usage.
-
-const h = htmlLexicon.Atomic.initializer, // only needed for .text() in tag's children
+import bbl from 'babelute';
+import { insertHTML } from './dom-utils'; // only used in contentEditable. safe for server and string output usage.
+/**
+ * @external {Pragmatics} https://github.com/nomocas/babelute
+ */
+const Scopes = bbl.Scopes,
+	h = htmlLexicon.Atomic.initializer, // only needed for .text() in tag's children
 	_targets = {
 		html: true
 	};
@@ -151,11 +71,11 @@ const renderActions = {
 		(frag || $tag).appendChild(lexem.child);
 	},
 
-	if($tag, lexem, env, frag) {
+	if ($tag, lexem, env, frag) {
 		const toRender = lexem.args[0] ? lexem.args[1] : (lexem.args[2] ? lexem.args[2] : null);
 		if (toRender) {
-			lexem.developped = (typeof toRender === 'function') ? toRender() : toRender;
-			render($tag, lexem.developped, env, frag);
+			lexem.developed = (typeof toRender === 'function') ? toRender() : toRender;
+			render($tag, lexem.developed, env, frag);
 		}
 		lexem.witness = document.createComment('if');
 		$tag.appendChild(lexem.witness);
@@ -182,51 +102,67 @@ const renderActions = {
 			onRender($tag, lexem, env, frag);
 	},
 	html($tag, lexem) {
-		lexem.children = domUtils.insertHTML(lexem.args[0], $tag);
+		lexem.children = insertHTML(lexem.args[0], $tag);
 	}
 };
 
 function render($tag, babelute, env, frag) {
 	for (let i = 0, action, lexem, lexems = babelute._lexems, len = lexems.length; i < len; ++i) {
 		lexem = lexems[i];
-		if (!_targets[lexem.lexic])
+		if (!_targets[lexem.lexicon])
 			continue;
 		action = renderActions[lexem.name];
 		if (action)
 			action($tag, lexem, env, frag);
-		else // no actions means it's a compound lexem : so recursion on first degree dev.
-			render($tag, htmlLexicon.developOneLevel(lexem), env, frag);
+		else { // no actions means it's a compound lexem : so recursion on first degree dev.
+			lexem.developed = bbl.developOneLevel(lexem);
+			render($tag, lexem.developed, env, frag);
+		}
 	}
 }
 
 //______________________________________________ DIF STRATEGY
 
+/**
+ * difActions
+ * @public
+ * @type {Object}
+ */
 const difActions = {
 	// structurals
-	if($tag, lexem, olexem, env) {
+	if ($tag, lexem, olexem, env) {
 		lexem.witness = olexem.witness;
 		const args = lexem.args,
 			oargs = olexem.args;
 		let toRender;
 		if (!args[0] !== !oargs[0]) { // condition has change
 			if (!args[0] || oargs[2]) // if condition was true (there is a success babelute that was rendered) OR it was false and there is an elseBabelute in olexem that was rendered
-				remove($tag, olexem.developped, env); // remove old babelute (either "success or else" babelute)
+				remove($tag, olexem.developed, env); // remove old babelute (either "success or else" babelute)
 			toRender = args[0] ? args[1] : args[2]; // if condition is true take "success babelute", else take "else babelute"
 			if (toRender) { // render : add children tags to fragment then add to $tag + add attributes (and co) directly to $tag.
 				const frag = document.createDocumentFragment();
-				lexem.developped = (typeof toRender === 'function') ? toRender() : toRender;
-				render($tag, lexem.developped, env, frag);
+				lexem.developed = (typeof toRender === 'function') ? toRender() : toRender;
+				render($tag, lexem.developed, env, frag);
 				$tag.insertBefore(frag, lexem.witness);
 			}
 		} else { // no change so dif rendered babelutes
 			toRender = args[0] ? args[1] : args[2];
 			if (toRender) {
-				lexem.developped = (typeof toRender === 'function') ? toRender() : toRender;
-				dif($tag, lexem.developped, olexem.developped, env);
+				lexem.developed = (typeof toRender === 'function') ? toRender() : toRender;
+				dif($tag, lexem.developed, olexem.developed, env);
 			}
 		}
 	},
 
+	/**
+	 * each
+	 * @public
+	 * @param  {[type]} $tag   [description]
+	 * @param  {[type]} lexem  [description]
+	 * @param  {[type]} olexem [description]
+	 * @param  {[type]} env    [description]
+	 * @return {[type]}        [description]
+	 */
 	each($tag, lexem, olexem, env) {
 		const collection = lexem.args[0],
 			renderItem = lexem.args[1],
@@ -352,7 +288,7 @@ const difActions = {
 			olexem.children && olexem.children.forEach((child) => {
 				$tag.removeChild(child);
 			});
-			lexem.children = domUtils.insertHTML(lexem.args[0], $tag, nextSibling);
+			lexem.children = insertHTML(lexem.args[0], $tag, nextSibling);
 		}
 	}
 };
@@ -360,19 +296,21 @@ const difActions = {
 function dif($tag, babelute, oldb, env) {
 	for (let lexem, olexem, action, i = 0, len = babelute._lexems.length; i < len; ++i) {
 		lexem = babelute._lexems[i];
-		if (!_targets[lexem.lexic])
+		if (!_targets[lexem.lexicon])
 			continue;
 		olexem = oldb._lexems[i];
 		if (!lexem.args.length) // wathever lexem is : no args implies never change, so keep old rendered
-			lexem.developped = olexem.developped;
+			lexem.developed = olexem.developed;
 		else {
 			action = difActions[lexem.name]; // structural or atom diffing action
 			if (action) // let strategy action do the job
 				action($tag, lexem, olexem, env);
-			else if (argsChanged(lexem.args, olexem.args)) // no action means compounds first degree lexem. so check args dif...
-				dif($tag, htmlLexicon.developOneLevel(lexem), olexem.developped, env);
-			else // keep old rendered (compounds args haven't changed : so nothing to do)
-				lexem.developped = olexem.developped;
+			else if (argsChanged(lexem.args, olexem.args)) {
+				// no action means compounds first degree lexem. so check args dif...
+				lexem.developed = bbl.developOneLevel(lexem);
+				dif($tag, lexem.developed, olexem.developed, env);
+			} else // keep old rendered (compounds args haven't changed : so nothing to do)
+				lexem.developed = olexem.developed;
 		}
 	}
 }
@@ -424,14 +362,14 @@ const removeActions = {
 function remove($tag, babelute, env) {
 	for (let i = 0, lexems = babelute._lexems, lexem, action, len = lexems.length; i < len; ++i) {
 		lexem = lexems[i];
-		if (!_targets[lexem.lexic])
+		if (!_targets[lexem.lexicon])
 			continue;
 		action = removeActions[lexem.name];
 		if (action) // class, attr, id, prop, data, each, and .on
 			action($tag, lexem, env);
-		else if (lexem.developped) { // compounds and if
-			remove($tag, lexem.developped, env);
-			lexem.developped = null;
+		else if (lexem.developed) { // compounds and if
+			remove($tag, lexem.developed, env);
+			lexem.developed = null;
 		} else if (lexem.child) { // tag and text
 			$tag.removeChild(lexem.child);
 			lexem.child = null;
@@ -443,10 +381,33 @@ function remove($tag, babelute, env) {
 
 //______________________________________________
 
-// exports pragmatics Object
-export default new Pragmatics(_targets, {
+/**
+ * DomDiffing Pragmatics instance
+ * @public
+ * @type {Pragmatics}
+ * @todo  addTargetLexicon(lexicon) => catch name for _targets + store lexicon reference for one level developement : no more need to register lexicons globally
+ * @example
+ * import difPragmas from 'babelute-html/src/html-to-dom-diffing.js';
+ * import htmlLexicon from 'babelute-html/src/html-lexicon.js';
+ *
+ * const h = htmlLexicon.firstLevelInitializer;
+ * let oldRendered, // for diffing tracking
+ * 	animFrame;
+ *
+ * function update(state) {
+ * 	if (animFrame)
+ * 		cancelAnimationFrame(animFrame);
+ * 	animFrame = requestAnimationFrame(() => {
+ * 		const newRendered = h.div(state.intro).section(h.class('my-section').h1(state.title));
+ * 		oldRendered = difPragmas.$output($root, newRendered, oldRendered);
+ * 	});
+ * }
+ * 
+ * update(myState);
+ */
+const difPragmas = bbl.createPragmatics(_targets, {
 	$output($tag, babelute, oldBabelute, env) {
-		env = env || new HTMLScopes();
+		env = env || new Scopes(this._initScopes ? this._initScopes() : null);
 		oldBabelute ? dif($tag, babelute, oldBabelute, env) : render($tag, babelute, env);
 		return babelute;
 	},
@@ -458,21 +419,4 @@ export default new Pragmatics(_targets, {
 	removeActions
 });
 
-/********************
- * Small First degree optimisation for diffing (bypass inner degrees developement) (don't look if you're new with babelute ;))
- * Optional.
- *********************/
-// small first degree optimisation (bypass .tag(._append()))
-// htmlLexicon.tagsList.forEach((name) => {
-// 	htmlLexicon.FirstLevel.prototype[name] = function() {
-// 		this._lexems.push(new Lexem('html', 'tag', [name, arguments]));
-// 		return this;
-// 	};
-// });
-// // small first degree optimisation (bypass .on(._append()))
-// htmlLexicon.eventsList.forEach((eventName) => {
-// 	htmlLexicon.FirstLevel.prototype[eventName] = function(handler, argument) {
-// 		this._lexems.push(new Lexem('html', 'on', [eventName, handler, argument]));
-// 		return this;
-// 	};
-// });
+export default difPragmas;

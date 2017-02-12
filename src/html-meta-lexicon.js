@@ -7,13 +7,24 @@
  * @copyright 2016-2017 Gilles Coomans
  */
 
+import babelute from 'babelute';
 import htmlLexicon from './html-lexicon.js';
-import { Lexicon } from 'babelute/src/lexicon/lexicon';
 
-const htmlMetaLexicon = new Lexicon('html-meta', htmlLexicon);
+/**
+ * html meta-tags dedicated lexicon. Extending htmlLexicon.
+ * @type {Lexicon}
+ * @public
+ */
+const htmlMetaLexicon = babelute.createLexicon('html-meta', htmlLexicon);
 
 htmlMetaLexicon.addCompounds((h) => {
 	return {
+		/**
+		 * add favicon tag (link)
+		 * @public
+		 * @param  {string} href the favicon href
+		 * @return {Babelute}      the current babelute
+		 */
 		favicon(href) {
 			return this.link(href, 'shortcut icon', h.attr('type', 'image/x-icon'));
 		},
@@ -50,16 +61,16 @@ htmlMetaLexicon.addCompounds((h) => {
 				.author(author);
 		},
 		opengraph(name, value) {
-			return this.div(name, value);
+			return this.meta(name, value);
 		},
 		facebook(data) {
-			return this.div(data);
+			return this.meta(data);
 		},
 		twitter(data) {
-			return this.div(data);
+			return this.meta(data);
 		},
 		googleplus(data) {
-			return this.div(data);
+			return this.meta(data);
 		}
 	};
 });

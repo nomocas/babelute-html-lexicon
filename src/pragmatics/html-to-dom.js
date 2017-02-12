@@ -6,14 +6,40 @@
  * @copyright 2016-2017 Gilles Coomans
  */
 
-import HTMLScopes from './html-scopes.js';
-import FacadePragmatics from 'babelute/src/pragmatics/facade-pragmatics';
-import domUtils from './dom-utils'; // only used in contentEditable. safe for server and string output usage.
+import babelute from 'babelute';
+import { insertHTML } from './dom-utils'; // only used in contentEditable. safe for server and string output usage.
+/**
+ * @external {FacadePragmatics} https://github.com/nomocas/babelute
+ */
+const Scopes = babelute.Scopes,
+	$baseOutput = babelute.FacadePragmatics.prototype.$output; 
 
-const domPragmas = new FacadePragmatics({
+/**
+ * Dom Pragmatics
+ * @type {FacadePragmatics}
+ * @public
+ * @example
+ * import domPragmas from 'babelute-html/src/html-to-dom.js';
+ * import htmlLexicon from 'babelute-html/src/html-lexicon.js';
+ *
+ * const h = htmlLexicon.initializer;
+ * const sentence = h.div(state.intro).section(h.class('my-section').h1(state.title));
+ * const $root = document.getElementById('foo');
+ * 
+ * domPragmas.$output($root, sentence);
+ */
+const domPragmas = babelute.createFacadePragmatics({
 	html: true
 }, {
 	// we only need to provides language atoms implementations.
+	/**
+	 * insert a tag in node
+	 * @public
+	 * @param  {DomElement} $tag the parent where insert tag
+	 * @param  {arguments} args   lexem arguments : [tagName:String, babelutes:Array<Babelutes>]
+	 * @param  {Scopes} scopes the scopes object
+	 * @return {[type]}        nothing
+	 */
 	tag($tag, args /* tagName, babelutes */ , scopes) {
 		const child = document.createElement(args[0]),
 			babelutes = args[1];
@@ -70,12 +96,12 @@ const domPragmas = new FacadePragmatics({
 	},
 
 	$output($tag, babelute, scopes = null) {
-		return FacadePragmatics.prototype.$output.call(this, $tag, babelute, scopes || new HTMLScopes()).children;
+		return $baseOutput.call(this, $tag, babelute, scopes || new Scopes(this._initScopes ? this._initScopes() : null)).children;
 	},
 
 	html($tag, args) {
 		if (args[0])
-			domUtils.insertHTML(args[0], $tag);
+			insertHTML(args[0], $tag);
 	}
 
 });
