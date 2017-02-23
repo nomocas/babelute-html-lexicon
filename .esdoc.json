@@ -8,7 +8,7 @@
 	},
 	"lint": true,
 	"coverage": true,
-	"styles": ["./doc-style.css"],
+	"styles": ["../babelute-doc-css/src/style.css"],
 	"manual": {
 		"badge": true,
 		"globalIndex": true,
