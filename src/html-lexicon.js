@@ -23,7 +23,7 @@ const htmlLexicon = createLexicon('html');
 /*******
  *******	LANGUAGE ATOMS
  *******/
-htmlLexicon.atomsList = ['tag', 'attr', 'prop', 'data', 'class', 'id', 'style', 'text', 'on', 'onDom', 'onString', 'if', 'each', 'html']; // we store it just because it could be usefu
+htmlLexicon.atomsList = ['tag', 'attr', 'prop', 'data', 'class', 'id', 'style', 'text', 'on', 'onDom', 'onString', 'if', 'each', 'keyedEach', 'html', 'execute']; // for convinience
 
 htmlLexicon.addAtoms(htmlLexicon.atomsList);
 
@@ -31,11 +31,17 @@ htmlLexicon.addAtoms(htmlLexicon.atomsList);
  *******	COMPOUNDS WORDS (based on language atoms)
  *******/
 // simple tags (made with .tag) (list should be completed)
-htmlLexicon.tagsList = ['body', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'section', 'span', 'button', 'main', 'article', 'hr', 'header', 'footer', 'label', 'ul', 'li', 'p', 'small', 'b', 'strong', 'i', 'u', 'select', 'title', 'meta'];
+htmlLexicon.tagsList = ['body', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'section', 'span', 'button', 'main', 'article', 'hr', 'header', 'footer', 'label', 'ul', 'li', 'p', 'small', 'b', 'strong', 'i', 'u', 'select', 'title', 'meta', 'table', 'tr', 'td', 'tbody'];
 // events (made with .on) (list should be completed)
 htmlLexicon.eventsList = ['click', 'blur', 'focus', 'submit', 'mouseover', 'mousedown', 'mouseup', 'mouseout', 'touchstart', 'touchend', 'touchcancel', 'touchleave', 'touchmove', 'drop', 'dragover', 'dragstart'];
 
 htmlLexicon
+	.addShortcut('component', function(Class, props) {
+		return this._append('html', 'component', [Class, props, this.__first_level_babelute__]);
+	})
+	.addShortcut('execute', function(method, ...args) {
+		return this._append('html', 'execute', [method, args]);
+	})
 	.addCompounds(() => {
 		const methods = {};
 		htmlLexicon.tagsList.forEach((tagName) => {
