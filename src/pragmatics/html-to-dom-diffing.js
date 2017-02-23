@@ -8,9 +8,11 @@
 import htmlLexicon from '../html-lexicon';
 import bbl from 'babelute';
 import { insertHTML } from './dom-utils'; // only used in contentEditable. safe for server and string output usage.
+
 /**
  * @external {Pragmatics} https://github.com/nomocas/babelute
  */
+
 const Scopes = bbl.Scopes,
 	h = htmlLexicon.Atomic.initializer, // only needed for .text() in tag's children
 	_targets = {
@@ -43,16 +45,19 @@ const renderActions = {
 		$tag.style[args[0]] = args[1];
 	},
 	id($tag, lexem) {
-		const args = lexem.args; /* value */
-		$tag.id = args[0];
+		$tag.id = lexem.args[0];
 	},
 	on($tag, lexem) {
 		const args = lexem.args; /* eventName, callback */
-		$tag.addEventListener(args[0], args[1]);
+		const closure = lexem.closure = { handler: args[1], arg:args[2] };
+		lexem.listener = function(e) {
+			return closure.handler.call(this, e, closure.arg);
+		};
+		$tag.addEventListener(args[0], lexem.listener);
 	},
 
 	// structural render actions
-	tag($tag, lexem, env, frag) {
+	tag($tag, lexem, scopes, frag) {
 		lexem.child = document.createElement(lexem.args[0]);
 		(frag || $tag).appendChild(lexem.child);
 		const babelutes = lexem.args[1];
@@ -62,26 +67,26 @@ const renderActions = {
 				babelute = '';
 			if (!babelute || !babelute.__babelute__) // text node
 				babelute = babelutes[i] = h.text(babelute);
-			render(lexem.child, babelute, env);
+			render(lexem.child, babelute, scopes);
 		}
 	},
 
-	text($tag, lexem, env, frag) {
+	text($tag, lexem, scopes, frag) {
 		lexem.child = document.createTextNode(lexem.args[0]);
 		(frag || $tag).appendChild(lexem.child);
 	},
 
-	if ($tag, lexem, env, frag) {
+	if ($tag, lexem, scopes, frag) {
 		const toRender = lexem.args[0] ? lexem.args[1] : (lexem.args[2] ? lexem.args[2] : null);
 		if (toRender) {
 			lexem.developed = (typeof toRender === 'function') ? toRender() : toRender;
-			render($tag, lexem.developed, env, frag);
+			render($tag, lexem.developed, scopes, frag);
 		}
 		lexem.witness = document.createComment('if');
 		$tag.appendChild(lexem.witness);
 	},
 
-	each($tag, lexem, env, frag) {
+	each($tag, lexem, scopes, frag) {
 		const args = lexem.args;
 		lexem.children = [];
 		const collection = args[0] = args[0] || [],
@@ -89,34 +94,37 @@ const renderActions = {
 		for (let i = 0, len = collection.length, rendered; i < len; ++i) {
 			rendered = itemRender(collection[i]);
 			lexem.children.push(rendered);
-			render($tag, rendered, env, frag);
+			render($tag, rendered, scopes, frag);
 		}
 		lexem.witness = document.createComment('each');
 		$tag.appendChild(lexem.witness);
 	},
 
 	// custom output
-	onDom($tag, lexem, env, frag /* args = render, dif, remove */ ) {
+	onDom($tag, lexem, scopes, frag /* args = render, dif, remove */ ) {
 		const onRender = lexem.args[0];
 		if (onRender)
-			onRender($tag, lexem, env, frag);
+			onRender($tag, lexem, scopes, frag);
 	},
 	html($tag, lexem) {
 		lexem.children = insertHTML(lexem.args[0], $tag);
+	},
+	execute($tag, lexem) {
+		lexem.args[0].apply(null, lexem.args[1]);
 	}
 };
 
-function render($tag, babelute, env, frag) {
+function render($tag, babelute, scopes, frag) {
 	for (let i = 0, action, lexem, lexems = babelute._lexems, len = lexems.length; i < len; ++i) {
 		lexem = lexems[i];
 		if (!_targets[lexem.lexicon])
 			continue;
 		action = renderActions[lexem.name];
 		if (action)
-			action($tag, lexem, env, frag);
+			action($tag, lexem, scopes, frag);
 		else { // no actions means it's a compound lexem : so recursion on first degree dev.
-			lexem.developed = bbl.developOneLevel(lexem);
-			render($tag, lexem.developed, env, frag);
+			lexem.developed = bbl.developOneLevel(lexem, _targets[lexem.lexicon]);
+			render($tag, lexem.developed, scopes, frag);
 		}
 	}
 }
@@ -130,71 +138,67 @@ function render($tag, babelute, env, frag) {
  */
 const difActions = {
 	// structurals
-	if ($tag, lexem, olexem, env) {
+	if ($tag, lexem, olexem, scopes) {
 		lexem.witness = olexem.witness;
 		const args = lexem.args,
 			oargs = olexem.args;
 		let toRender;
 		if (!args[0] !== !oargs[0]) { // condition has change
 			if (!args[0] || oargs[2]) // if condition was true (there is a success babelute that was rendered) OR it was false and there is an elseBabelute in olexem that was rendered
-				remove($tag, olexem.developed, env); // remove old babelute (either "success or else" babelute)
+				remove($tag, olexem.developed, scopes); // remove old babelute (either "success or else" babelute)
 			toRender = args[0] ? args[1] : args[2]; // if condition is true take "success babelute", else take "else babelute"
 			if (toRender) { // render : add children tags to fragment then add to $tag + add attributes (and co) directly to $tag.
 				const frag = document.createDocumentFragment();
 				lexem.developed = (typeof toRender === 'function') ? toRender() : toRender;
-				render($tag, lexem.developed, env, frag);
+				render($tag, lexem.developed, scopes, frag);
 				$tag.insertBefore(frag, lexem.witness);
 			}
 		} else { // no change so dif rendered babelutes
 			toRender = args[0] ? args[1] : args[2];
 			if (toRender) {
 				lexem.developed = (typeof toRender === 'function') ? toRender() : toRender;
-				dif($tag, lexem.developed, olexem.developed, env);
+				dif($tag, lexem.developed, olexem.developed, scopes);
 			}
 		}
 	},
 
-	/**
-	 * each
-	 * @public
-	 * @param  {[type]} $tag   [description]
-	 * @param  {[type]} lexem  [description]
-	 * @param  {[type]} olexem [description]
-	 * @param  {[type]} env    [description]
-	 * @return {[type]}        [description]
-	 */
-	each($tag, lexem, olexem, env) {
+	each($tag, lexem, olexem, scopes) {
 		const collection = lexem.args[0],
 			renderItem = lexem.args[1],
 			ochildren = olexem.children,
 			len = collection.length,
 			olen = ochildren.length,
-			children = lexem.children = [];
+			children = lexem.children = new Array(len);
+
 		let rendered,
 			frag,
+			item,
 			i = 0;
 
 		lexem.witness = olexem.witness; // keep track of witness
+
 		if (len > olen) // create fragment for new items
 			frag = document.createDocumentFragment();
 		for (; i < len; ++i) { // for all items (from new lexem)
-			rendered = renderItem(collection[i]); // render firstdegree item
-			children.push(rendered); // keep new rendered
+			item = collection[i];
+			rendered = renderItem(item); // render firstdegree item
+			children[i] = rendered; // keep new rendered for next diffing
 			if (i < olen) // dif existing children
-				dif($tag, rendered, ochildren[i], env);
+				dif($tag, rendered, ochildren[i], scopes);
 			else // full render new item and place produced tags in fragment 
-				render($tag, rendered, env, frag); // ($tag is forwarded for first level non-tags atoms lexems (aka class, attr, ...))
+				render($tag, rendered, scopes, frag); // ($tag is forwarded for first level non-tags atoms lexems (aka class, attr, ...))
 		}
 		for (; i < olen; ++i) // remove not diffed old children
-			remove($tag, ochildren[i], env);
+			remove($tag, ochildren[i], scopes);
 		if (frag) // insert new children fragment (if any)
 			$tag.insertBefore(frag, lexem.witness);
 	},
 
-	tag($tag, lexem, olexem, env) {
+	tag($tag, lexem, olexem, scopes) {
 		lexem.child = olexem.child; // keep track of elementNode
 		const babelutes = lexem.args[1],
 			obabelutes = olexem.args[1];
+
 		let babelute, obabelute;
 		for (let i = 0, len = babelutes.length; i < len; i++) {
 			// render all children's babelutes
@@ -206,22 +210,27 @@ const difActions = {
 				babelute = '';
 			if (!babelute || !babelute.__babelute__)
 				babelute = babelutes[i] = h.text(babelute);
-			dif(lexem.child, babelute, obabelute, env);
+			dif(lexem.child, babelute, obabelute, scopes);
 		}
 	},
 
 	text($tag, lexem, olexem) {
+
+		const newText = lexem.args[0];
+
 		lexem.child = olexem.child; // keep track of textnode
-		if (lexem.args[0] !== olexem.args[0])
-			lexem.child.nodeValue = lexem.args[0];
+		if (newText !== olexem.args[0])
+			lexem.child.nodeValue = newText;
 	},
 
 	// html simple atoms diffing
 	class($tag, lexem, olexem) {
+
 		const name = lexem.args[0], // new class name
 			oname = olexem.args[0], // old class name
 			flag = lexem.args[1], // new class flag
 			oflag = olexem.args[1]; // old class flag
+
 		if (name !== oname) {
 			if (oname)
 				$tag.classList.remove(oname);
@@ -232,46 +241,76 @@ const difActions = {
 	},
 
 	attr($tag, lexem, olexem) {
-		if (lexem.args[0] !== olexem.args[0]) {
-			$tag.removeAttribute(olexem.args[0]);
-			$tag.setAttribute(lexem.args[0], lexem.args[1]);
-		} else if (lexem.args[1] !== olexem.args[1])
-			$tag.setAttribute(lexem.args[0], lexem.args[1]);
+		const name = lexem.args[0],
+			value = lexem.args[1],
+			oname = olexem.args[0],
+			ovalue = olexem.args[1];
+
+		if (name !== oname) {
+			$tag.removeAttribute(oname);
+			$tag.setAttribute(name, value);
+		} else if (value !== ovalue)
+			$tag.setAttribute(name, value);
 	},
 
 	prop($tag, lexem, olexem) {
-		if (lexem.args[0] !== olexem.args[0]) {
-			delete $tag[olexem.args[0]];
-			$tag[lexem.args[0]] = lexem.args[1];
-		} else if (lexem.args[1] !== $tag[lexem.args[0]] /*olexem.args[1]*/ ) // look diectly in element : for "checked" bug (or other properties that change on native interaction with element)
-			$tag[lexem.args[0]] = lexem.args[1];
+
+		const name = lexem.args[0],
+			value = lexem.args[1],
+			oname = olexem.args[0];
+
+		if (name !== oname) {
+			delete $tag[oname];
+			$tag[name] = value;
+		} else if (value !== $tag[name] /*olexem.args[1]*/ ) // look diectly in element : for "checked" bug (or other properties that change on native interaction with element)
+			$tag[name] = value;
 	},
 
 	data($tag, lexem, olexem) {
-		if (lexem.args[0] !== olexem.args[0]) {
-			delete $tag.dataset[olexem.args[0]];
-			$tag.dataset[lexem.args[0]] = lexem.args[1];
-		} else if (lexem.args[1] !== olexem.args[1])
-			$tag.dataset[lexem.args[0]] = lexem.args[1];
+
+		const name = lexem.args[0],
+			value = lexem.args[1],
+			oname = olexem.args[0],
+			ovalue = olexem.args[1];
+
+		if (name !== oname) {
+			delete $tag.dataset[oname];
+			$tag.dataset[name] = value;
+		} else if (value !== ovalue)
+			$tag.dataset[name] = value;
 	},
 
 	style($tag, lexem, olexem) {
-		if (lexem.args[0] !== olexem.args[0]) {
-			delete $tag.style[olexem.args[0]];
-			$tag.style[lexem.args[0]] = lexem.args[1];
-		} else if (lexem.args[1] !== olexem.args[1])
-			$tag.style[lexem.args[0]] = lexem.args[1];
+		const name = lexem.args[0],
+			value = lexem.args[1],
+			oname = olexem.args[0],
+			ovalue = olexem.args[1];
+
+		if (name !== oname) {
+			delete $tag.style[oname];
+			$tag.style[name] = value;
+		} else if (value !== ovalue)
+			$tag.style[name] = value;
 	},
 
 	id($tag, lexem, olexem) {
-		if (lexem.args[0] !== olexem.args[0])
-			$tag.id = lexem.args[0];
+		const id = lexem.args[0];
+		if (id !== olexem.args[0])
+			$tag.id = id;
 	},
 
 	on($tag, lexem, olexem) {
-		if (lexem.args[0] !== olexem.args[0] || lexem.args[1] !== olexem.args[1]) {
-			$tag.removeEventListener(olexem.args[0], olexem.args[1]);
-			$tag.addEventListener(lexem.args[0], lexem.args[1]);
+		const name = lexem.args[0],
+			oname = olexem.args[0];
+
+		if (name !== oname) {
+			$tag.removeEventListener(oname, olexem.listener);
+			renderActions.on($tag, lexem);
+		} else {
+			const closure = lexem.closure = olexem.closure;
+			lexem.listener = olexem.listener;
+			closure.handler = lexem.args[1];
+			closure.arg = lexem.args[2];
 		}
 	},
 
@@ -282,18 +321,22 @@ const difActions = {
 	},
 
 	html($tag, lexem, olexem) {
-		if (olexem.args[0] !== lexem.args[0]) {
+		const newHTML = lexem.args[0];
+		if (olexem.args[0] !== newHTML) {
 			const lastChild = olexem.children ? olexem.children[olexem.children.length - 1] : null,
 				nextSibling = lastChild ? lastChild.nextSibling : null;
-			olexem.children && olexem.children.forEach((child) => {
-				$tag.removeChild(child);
-			});
-			lexem.children = insertHTML(lexem.args[0], $tag, nextSibling);
+			olexem.children && olexem.children.forEach((child) => $tag.removeChild(child));
+			lexem.children = insertHTML(newHTML, $tag, nextSibling);
 		}
+	},
+	execute($tag, lexem, olexem) {
+		if (lexem.args[0] !== olexem.args[0] || !argsChanged(lexem.args[1], olexem.args[1]))
+			return;
+		lexem.args[0].apply(null, lexem.args[1]);
 	}
 };
 
-function dif($tag, babelute, oldb, env) {
+function dif($tag, babelute, oldb, scopes) {
 	for (let lexem, olexem, action, i = 0, len = babelute._lexems.length; i < len; ++i) {
 		lexem = babelute._lexems[i];
 		if (!_targets[lexem.lexicon])
@@ -304,11 +347,11 @@ function dif($tag, babelute, oldb, env) {
 		else {
 			action = difActions[lexem.name]; // structural or atom diffing action
 			if (action) // let strategy action do the job
-				action($tag, lexem, olexem, env);
+				action($tag, lexem, olexem, scopes);
 			else if (argsChanged(lexem.args, olexem.args)) {
 				// no action means compounds first degree lexem. so check args dif...
-				lexem.developed = bbl.developOneLevel(lexem);
-				dif($tag, lexem.developed, olexem.developed, env);
+				lexem.developed = bbl.developOneLevel(lexem, _targets[lexem.lexicon]);
+				dif($tag, lexem.developed, olexem.developed, scopes);
 			} else // keep old rendered (compounds args haven't changed : so nothing to do)
 				lexem.developed = olexem.developed;
 		}
@@ -345,36 +388,38 @@ const removeActions = {
 		delete $tag.id;
 	},
 	on($tag, lexem) {
-		$tag.removeEventListener(lexem.args[0], lexem.listener || lexem.args[1]);
+		$tag.removeEventListener(lexem.args[0], lexem.listener);
 	},
 	each($tag, lexem, scopes) {
-		lexem.children.forEach((child) => {
-			remove($tag, child, scopes);
-		});
+		lexem.children.forEach((child) => remove($tag, child, scopes));
 	},
 	onDom($tag, lexem /* render, dif, remove */ ) {
 		const remove = lexem.args[2];
 		if (remove)
 			remove($tag, lexem);
+	},
+	html($tag, lexem) {
+		if (lexem.children)
+			lexem.children.forEach((child) => $tag.removeChild(child));
 	}
 };
 
-function remove($tag, babelute, env) {
+function remove($tag, babelute, scopes) {
 	for (let i = 0, lexems = babelute._lexems, lexem, action, len = lexems.length; i < len; ++i) {
 		lexem = lexems[i];
 		if (!_targets[lexem.lexicon])
 			continue;
 		action = removeActions[lexem.name];
 		if (action) // class, attr, id, prop, data, each, and .on
-			action($tag, lexem, env);
+			action($tag, lexem, scopes);
 		else if (lexem.developed) { // compounds and if
-			remove($tag, lexem.developed, env);
+			remove($tag, lexem.developed, scopes);
 			lexem.developed = null;
 		} else if (lexem.child) { // tag and text
 			$tag.removeChild(lexem.child);
 			lexem.child = null;
 		}
-		if (lexem.witness) // view, if, each
+		if (lexem.witness) // if, each
 			$tag.removeChild(lexem.witness);
 	}
 }
@@ -406,10 +451,17 @@ function remove($tag, babelute, env) {
  * update(myState);
  */
 const difPragmas = bbl.createPragmatics(_targets, {
-	$output($tag, babelute, oldBabelute, env) {
-		env = env || new Scopes(this._initScopes ? this._initScopes() : null);
-		oldBabelute ? dif($tag, babelute, oldBabelute, env) : render($tag, babelute, env);
+	$output($tag, babelute, oldBabelute, scopes) {
+		scopes = scopes || new Scopes(this._initScopes ? this._initScopes() : null);
+		oldBabelute ? dif($tag, babelute, oldBabelute, scopes) : render($tag, babelute, scopes);
 		return babelute;
+	},
+	addLexicon(lexicon, name) {
+		this._targets[name || lexicon.name] = lexicon;
+		while (lexicon.parent) {
+			lexicon = lexicon.parent;
+			this._targets[lexicon.name] = lexicon;
+		}
 	},
 	render,
 	dif,
@@ -420,3 +472,4 @@ const difPragmas = bbl.createPragmatics(_targets, {
 });
 
 export default difPragmas;
+
