@@ -1,6 +1,6 @@
 # AST html diffing
 
-__World's Fastest Diffing algorithm__ (in many cases ;)). Also one of the lightest and simplest to understand, tweak, maintain, etc.
+__One of the World's Fastest Diffing algorithms__. Also one of the lightest and simplest to understand, tweak, maintain, etc.
 
 No more esoteric Virtual DOM or diffing algorithm. 
 
@@ -10,7 +10,7 @@ For benchmark : see [todomvc bench](https://github.com/nomocas/babelute-todomvc-
 
 ```javascript
 
-//__________________ def a store 
+//__________________ def a store (aka your model)
 // (something that handle immutable data and could trigger, somehow, an event when data are updated (use Redux and Immutables by example))
 // here we'll define a singleton minimalistic EventEmitter based store
 
@@ -43,16 +43,12 @@ for (const i in MyEmitterStore.methods)
 	MyEmitterStore.methods[i] = MyEmitterStore.methods[i].bind(MyEmitterStore);
 
 
-//__________________ create your lexicon
+//__________________ create your lexicon (aka the components of your view(s))
 
 import babelute from 'babelute';
 import htmlLexicon from 'babelute-html/src/html-lexicon';
 
 const myLexicon = babelute.createLexicon('myLexiconName', htmlLexicon);
-
-// lexicons need to be registred for One-Level-Development (i.e. for diffing)
-babelute.registerLexicon(htmlLexicon);
-babelute.registerLexicon(myLexicon);
 
 myLexicon.addCompounds((h) => {
 	return {
@@ -77,12 +73,12 @@ myLexicon.addCompounds((h) => {
 	}
 });
 
-//__________________________ Use your lexicon
+//__________________________ Use your lexicon with your store through diffing
 
 import differ from 'babelute-html/src/pragmatics/html-to-dom-diffing'; // first degree diffing (only for DOM)
 
-// don't forget to add your lexicon(s) name to differ's _targets
-differ._targets.myLexiconName = true;	
+// don't forget to add your lexicon(s) to differ's targets
+differ.addLexicon(myLexicon);	
 
 const h = myLexicon.firstLevelInitializer,
 	$root = document.getElementById('my-app'); // where rendering take place
