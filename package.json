@@ -1,6 +1,6 @@
 {
   "name": "babelute-html",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Babelute HTML5 DSL and its isomorphic rendering engines. World's fastest, lightest and simplest.",
   "main": "dist/bundles/index.js",
   "module": "dist/bundles/index.mjs",
