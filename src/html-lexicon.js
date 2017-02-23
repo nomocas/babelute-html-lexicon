@@ -58,15 +58,6 @@ htmlLexicon
 	})
 	.addCompounds((h) => {
 		return {
-			/**
-			 * a link tag
-			 * @public
-			 * @implements {htmlLexicon}
-			 * @param  {String} href     the link's href
-			 * @param  {String} rel      this link's rel
-			 * @param  {?Babelute} babelute an optional babelute to apply on tag
-			 * @return {Babelute}          current babelute
-			 */
 			link(href, rel, babelute) {
 				return this.tag('link', [h.attr('href', href).attr('rel', rel), babelute]);
 			},
@@ -126,12 +117,6 @@ htmlLexicon
 			}
 		};
 	});
-
-htmlLexicon.eventsList.forEach((eventName) => {
-	htmlLexicon.FirstLevel.prototype[eventName] = function(handler, argument) {
-		return this._append('html', 'on', [eventName, handler, argument]);
-	};
-});
 
 htmlLexicon.tagsList.forEach((tagName) => {
 	htmlLexicon.FirstLevel.prototype[tagName] = function() {
