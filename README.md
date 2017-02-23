@@ -35,7 +35,7 @@ It provides :
 	- html-two-pass-string (for real server side isomorphism)
 
 
-It could be extended for any other rendering engine. By example there is already babelute-deathmood or babelute-vdom.
+It could be extended for any other rendering engine.
 
 What is really elegant, is that none of the concepts or the tools needed to achieve this has been made for html handling. All this comes directly from Babelute DSL paradigm and is in fact just its application (one among all other DSLs).
 
