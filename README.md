@@ -1,10 +1,11 @@
 # babelute-html
 
-[![npm](https://img.shields.io/npm/v/babelute-html.svg)]()
-[![npm-downloads](https://img.shields.io/npm/dm/babelute-html.svg)]()
-[![licence](https://img.shields.io/npm/l/babelute-html.svg)]()
-[![dependecies](https://img.shields.io/david/nomocas/babelute-html.svg)]()
-[![dev-dependencies](https://img.shields.io/david/dev/nomocas/babelute-html.svg)]()
+[![Travis branch](https://img.shields.io/travis/nomocas/async-aggregator/master.svg)](https://travis-ci.org/nomocas/babelute-html-lexicon)
+[![npm](https://img.shields.io/npm/v/babelute-html-lexicon.svg)]()
+[![npm-downloads](https://img.shields.io/npm/dm/babelute-html-lexicon.svg)]()
+[![licence](https://img.shields.io/npm/l/babelute-html-lexicon.svg)]()
+[![dependecies](https://img.shields.io/david/nomocas/babelute-html-lexicon.svg)]()
+[![dev-dependencies](https://img.shields.io/david/dev/nomocas/babelute-html-lexicon.svg)]()
 
 HTML DSL for Babelute. So simple, so powerful.
 
@@ -16,28 +17,26 @@ HTML DSL for Babelute. So simple, so powerful.
 - Simple and easy to understand algorithm. No more esoteric interpretation or optimisation trick. You are the master.
 - Diffing algo that will show excellent behaviour when scalling. More components you have, more optimisation happend.
 - Absolutly non-obstrusive (but need immutables). Play really well with other libs (redux, immutables, jquery, ...).
-- Perfectly isomorphic. 
+- Perfectly isomorphic. (work in progress)
 - Ultra fast server side string rendering.
 
 And of course as a Babelute DSL, it could be used along with ALL other Babelute's DSL. 
 Specifically, it will be used heavily as HTML translation target for any Babelute sentences that need HTML representation.
-(By example : babelute-doc, babelute-aright, babelute-fs, babelute-cooking, ...)
 
-It provides :
-- 2 lexicons
-	- the HTML5 keywords lexicon
-	- the HTML5 meta-tags (and social medias add-ons) lexicon
-
-- 4 Pragmatics engines
-	- html-to-string
-	- html-to-dom
-	- html-to-dom-diffing
-	- html-two-pass-string (for real server side isomorphism)
-
+This is the Lexicon for HTML words. It should be used in conjonction with an output engine :
+- [babelute-html-dom-pragmatics](https://github.com/nomocas/babelute-html-dom-pragmatics)
+- [babelute-html-string-pragmatics](https://github.com/nomocas/babelute-html-string-pragmatics)
+- [babelute-html-dom-diffing-pragmatics](https://github.com/nomocas/babelute-html-dom-diffing-pragmatics)
 
 It could be extended for any other rendering engine.
 
-What is really elegant, is that none of the concepts or the tools needed to achieve this has been made for html handling. All this comes directly from Babelute DSL paradigm and is in fact just its application (one among all other DSLs).
+## Genesis
+
+Please refer to [designing a DSL](https://github.com/nomocas/babelute/blob/master/manual/designing-dsl.md) to understand how this could be constructed and use.
+
+There is much more things in this library than in the examples.
+
+More doc coming soon.
 
 ## Licence
 

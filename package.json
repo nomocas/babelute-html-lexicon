@@ -1,15 +1,15 @@
 {
-  "name": "babelute-html",
+  "name": "babelute-html-lexicon",
   "version": "0.2.1",
-  "description": "Babelute HTML5 DSL and its isomorphic rendering engines. World's fastest, lightest and simplest.",
+  "description": "Babelute HTML5 DSL Lexicon. All you need to write HTML or describe DOM in pure js.",
   "main": "dist/bundles/index.js",
   "module": "dist/bundles/index.mjs",
   "jsnext:main": "dist/bundles/index.mjs",
   "scripts": {
     "prebuild": "eslint src test",
-    "build": "npm run es5-build",
-    "es5-build": "babel src -d dist/es5",
-    "es5-watch": "babel src -d dist/es5 -w",
+    "build": "npm run bundles-build",
+    "bundles-build": "rollup -c",
+    "bundles-watch": "rollup -c -w",
     "pretest": "npm run build",
     "test": "mocha",
     "cover": "cross-env NODE_ENV=test nyc --reporter=lcov --reporter=text mocha test/*.js",
@@ -68,6 +68,9 @@
     "rollup": "^0.41.4",
     "rollup-plugin-babel": "^2.7.1",
     "rollup-watch": "^3.2.2",
+    "rollup-plugin-commonjs": "^8.0.2",
+    "rollup-plugin-node-resolve": "^2.0.0",
     "uglify-js": "^2.7.5"
   }
 }
+
