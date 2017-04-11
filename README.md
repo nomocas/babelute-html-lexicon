@@ -1,6 +1,6 @@
 # babelute-html-lexicon
 
-[![Travis branch](https://img.shields.io/travis/nomocas/async-aggregator/master.svg)](https://travis-ci.org/nomocas/babelute-html-lexicon)
+[![Travis branch](https://img.shields.io/travis/nomocas/babelute-html-lexicon/master.svg)](https://travis-ci.org/nomocas/babelute-html-lexicon)
 [![bitHound Overall Score](https://www.bithound.io/github/nomocas/babelute/badges/score.svg)](https://www.bithound.io/github/nomocas/babelute-html-lexicon)
 [![npm](https://img.shields.io/npm/v/babelute-html-lexicon.svg)]()
 [![npm-downloads](https://img.shields.io/npm/dm/babelute-html-lexicon.svg)]()
