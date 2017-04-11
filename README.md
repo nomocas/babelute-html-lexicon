@@ -1,4 +1,4 @@
-# babelute-html
+# babelute-html-lexicon
 
 [![Travis branch](https://img.shields.io/travis/nomocas/async-aggregator/master.svg)](https://travis-ci.org/nomocas/babelute-html-lexicon)
 [![npm](https://img.shields.io/npm/v/babelute-html-lexicon.svg)]()
