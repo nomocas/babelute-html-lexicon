@@ -1,6 +1,6 @@
 {
   "name": "babelute-html-lexicon",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Babelute HTML5 DSL Lexicon. All you need to write HTML or describe DOM in pure js.",
   "main": "dist/bundles/index.js",
   "module": "dist/bundles/index.mjs",
@@ -73,4 +73,3 @@
     "uglify-js": "^2.7.5"
   }
 }
-
