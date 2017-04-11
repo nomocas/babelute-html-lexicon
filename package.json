@@ -1,6 +1,6 @@
 {
   "name": "babelute-html-lexicon",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Babelute HTML5 DSL Lexicon. All you need to write HTML or describe DOM in pure js.",
   "main": "dist/bundles/index.js",
   "module": "dist/bundles/index.mjs",
@@ -42,7 +42,7 @@
   "homepage": "https://github.com/nomocas/babelute-html#readme",
   "dependencies": {
     "babelute": "^0.4.3",
-    "nomocas-webutils":"0.0.7"
+    "nomocas-webutils": "0.0.7"
   },
   "devDependencies": {
     "assert": "^1.4.1",
