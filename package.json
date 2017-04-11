@@ -41,9 +41,8 @@
   },
   "homepage": "https://github.com/nomocas/babelute-html#readme",
   "dependencies": {
-    "babelute": "^0.4.0",
-    "nomocas-utils": "0.3.0",
-    "to-slug-case": "^1.0.0"
+    "babelute": "^0.4.3",
+    "nomocas-webutils":"0.0.7"
   },
   "devDependencies": {
     "assert": "^1.4.1",
