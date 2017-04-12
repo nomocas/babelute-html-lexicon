@@ -40,6 +40,12 @@ So, it should be used in conjonction with an output engine (called Pragmatics in
 
 And it could be extended for any other rendering engine. (example coming soon)
 
+## Plugins
+
+- [babelute-html-component](https://github.com/nomocas/babelute-html-component)
+- babelute-html-router
+
+
 ## Examples
 
 - [babelute-html-todomvc](https://github.com/nomocas/babelute-html-todomvc)
