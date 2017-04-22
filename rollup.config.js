@@ -8,8 +8,12 @@ const pkg = require('./package.json');
 
 export default {
 	entry: 'src/index.js',
-	plugins: [babel(babelrc()), nodeResolve(), commonjs()],
-	external:['babelute'],
+	plugins: [
+		babel(babelrc()),
+		nodeResolve(), 
+		commonjs()
+	],
+	external: ['babelute'],
 	targets: [{
 		dest: pkg.main,
 		format: 'cjs',
